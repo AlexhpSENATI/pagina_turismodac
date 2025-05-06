@@ -2,9 +2,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 
 import React from "react";
+
+import Contacto from './components/contact';
 import SecHero from './components/sec_hero.jsx';
 import Inicio from './components/index.jsx';
-import Contacto from './components/contact.jsx';
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -31,17 +32,3 @@ export default App;
 
 
 
-
-// function App() {
-//   return (
-//     <div className="App">
-//       <SecHero />
-//     </div>
-//     <div className="XD">
-//     <Index />
-//   </div>
-    
-//   );
-// }
-
-// export default App;

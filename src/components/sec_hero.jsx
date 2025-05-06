@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from 'react-router-dom';
+
 import "../styles/sec_hero.css";
 import { FaUser, FaPlay, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
@@ -136,8 +138,8 @@ const SecHero = () => {
             <a href="#" className="nav-link">Destinos</a>
             <a href="#" className="nav-link">Promociones</a>
             <a href="#" className="nav-link">Blog</a>
-            <a href="src/components/contact.jsx" className="nav-link">Contacto</a>
-          </div>
+            <Link to="/contacto" className="nav-link">Contacto</Link>
+            </div>
 
           <div className={`navbar-right ${isNavbarVisible ? '' : 'hidden'}`}>
             <button className="login-btn">
