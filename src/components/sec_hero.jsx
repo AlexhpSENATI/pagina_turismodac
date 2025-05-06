@@ -1,45 +1,68 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../styles/sec_hero.css";
-import { FaUser, FaPlay } from "react-icons/fa"; // Importamos iconos de react-icons
-import image1 from "../assets/fondo1.png";
-import image2 from "../assets/fondo2.png";
-import image3 from "../assets/fondo1.png";
+import { FaUser, FaPlay, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+
+import fondo1 from '../assets/fondo1.png';
+import fondo2 from '../assets/fondo2.png';
+import fondo3 from '../assets/fondo1.png';
 
 const SecHero = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const carouselRef = useRef(null);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const slides = [
-    { 
-      image: image1, 
+    {
+      image: fondo1,
       title: "Descubre paisajes increíbles",
-      subtitle: "Explora los destinos más impresionantes del mundo" 
+      subtitle: "Explora los destinos más impresionantes del mundo"
     },
-    { 
-      image: image2, 
+    {
+      image: fondo2,
       title: "Aventuras inolvidables",
-      subtitle: "Vive experiencias únicas en cada viaje" 
+      subtitle: "Vive experiencias únicas en cada viaje"
     },
-    { 
-      image: image3, 
+    {
+      image: fondo3,
       title: "Lugares paradisíacos",
-      subtitle: "Encuentra tu próximo destino soñado" 
+      subtitle: "Encuentra tu próximo destino soñado"
     }
   ];
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setIsScrolled(currentScrollY > 10);
+      
+      if (currentScrollY > 10) {
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          // Scroll hacia abajo - ocultar solo partes del navbar
+          setIsNavbarVisible(false);
+        } else if (currentScrollY < lastScrollY) {
+          // Scroll hacia arriba - mostrar todo
+          setIsNavbarVisible(true);
+        }
+      } else {
+        // En el top - siempre visible
+        setIsNavbarVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % slides.length);
+      nextSlide();
     }, 5000);
     return () => clearInterval(interval);
-  }, [slides.length]);
+  }, []);
 
   const goToSlide = (index) => {
     setCurrentSlide(index);
@@ -47,18 +70,24 @@ const SecHero = () => {
 
   const nextSlide = () => {
     setCurrentSlide(prev => (prev + 1) % slides.length);
+    if (carouselRef.current) {
+      carouselRef.current.style.transition = "transform 0.5s ease-in-out";
+    }
   };
 
   const prevSlide = () => {
     setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
+    if (carouselRef.current) {
+      carouselRef.current.style.transition = "transform 0.5s ease-in-out";
+    }
   };
 
   return (
     <section className="hero-section">
       {/* Carrusel de imágenes */}
-      <div className="carousel-container">
+      <div className="carousel-container" ref={carouselRef}>
         {slides.map((slide, index) => (
-          <div 
+          <div
             key={index}
             className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
             style={{ backgroundImage: `url(${slide.image})` }}
@@ -70,13 +99,14 @@ const SecHero = () => {
       </div>
 
       {/* Controles del carrusel */}
-      <button className="carousel-control prev" onClick={prevSlide}>
-        &lt;
+      <button className="carousel-control prev" onClick={prevSlide} aria-label="Previous slide">
+        <FaChevronLeft size={24} />
       </button>
-      <button className="carousel-control next" onClick={nextSlide}>
-        &gt;
+      <button className="carousel-control next" onClick={nextSlide} aria-label="Next slide">
+        <FaChevronRight size={24} />
       </button>
 
+      {/* Indicadores del carrusel */}
       <div className="carousel-indicators">
         {slides.map((_, index) => (
           <button
@@ -84,62 +114,77 @@ const SecHero = () => {
             className={`indicator ${index === currentSlide ? 'active' : ''}`}
             onClick={() => goToSlide(index)}
             aria-label={`Ir a slide ${index + 1}`}
-          />
+            onMouseEnter={() => goToSlide(index)}
+          >
+            <span className="progress-bar"></span>
+          </button>
         ))}
       </div>
 
+      {/* Navbar */}
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="navbar-container">
-          <div className="navbar-left">
+          <div className={`navbar-left ${isNavbarVisible ? '' : 'hidden'}`}>
             <a className="logo" href="#">
               Turismo<span className="logo-highlight">HP</span>
             </a>
           </div>
-          
+
           <div className="navbar-center">
             <a href="#" className="nav-link">Inicio</a>
             <a href="#" className="nav-link">Nosotros</a>
             <a href="#" className="nav-link">Destinos</a>
             <a href="#" className="nav-link">Promociones</a>
             <a href="#" className="nav-link">Blog</a>
-            <a href="#" className="nav-link">Contacto</a>
+            <a href="src/components/contact.jsx" className="nav-link">Contacto</a>
           </div>
-          
-          <div className="navbar-right">
-            <button className="login-icon">
-              <FaUser size={18} />
+
+          <div className={`navbar-right ${isNavbarVisible ? '' : 'hidden'}`}>
+            <button className="login-btn">
+              <FaUser size={16} />
+              <span>Iniciar sesión</span>
             </button>
           </div>
         </div>
       </nav>
 
+      {/* Contenido principal */}
       <div className="hero-content">
         <div className="text-content">
-          <p className="intro-text fade-in">{slides[currentSlide].subtitle}</p>
-          <h1 className="main-title slide-up">
-            <strong>{slides[currentSlide].title}</strong>
+          <p className="intro-text">{slides[currentSlide].subtitle}</p>
+          <h1 className="main-title">
+            {slides[currentSlide].title.split(" ").map((word, i) => (
+              <span key={i} className="title-word" style={{ animationDelay: `${0.3 + i * 0.1}s` }}>
+                {word}&nbsp;
+              </span>
+            ))}
           </h1>
-          
+
           <div className="button-group">
-            <button 
-              className="primary-btn pulse"
+            <button
+              className="primary-btn"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              {isHovered ? '¡Empezar ahora!' : 'Descubrir más'}
+              <span className="btn-content">
+                {isHovered ? '¡Empezar ahora!' : 'Descubrir más'}
+              </span>
+              <span className="btn-gradient"></span>
             </button>
-            
+
             <button className="secondary-btn">
-              Ver promociones
+              <span>Ver promociones</span>
             </button>
-            
+
             <button className="video-btn">
-              <FaPlay size={14} /> Ver tour
+              <FaPlay size={14} />
+              <span>Ver tour</span>
             </button>
           </div>
         </div>
       </div>
 
+      {/* Indicador de scroll */}
       <div className="scroll-down">
         <div className="mouse">
           <div className="wheel"></div>
